@@ -30,5 +30,10 @@ def create_app(test_config=None):
 
     from . import db
     db.init_app(app)
+    from . import user
+    app.register_blueprint(user.bp)
+    from . import band
+    app.register_blueprint(band.bp)
+    app.add_url_rule('/', endpoint='index')
     
     return app
