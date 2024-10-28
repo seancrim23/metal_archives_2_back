@@ -6,20 +6,12 @@ from werkzeug.exceptions import abort
 from flaskr.auth import login_required
 from flaskr.db import get_db
 
-bp = Blueprint('band', __name__, url_prefix='/band')
-
-#this needs to be paginated
-@bp.route('/')
-def get_all_bands():
-    db = get_db()
-    bands = db.execute(
-        'SELECT * FROM band'
-    ).fetchall()
-    return bands
+bp = Blueprint('release', __name__, url_prefix='/release')
 
 @bp.route('/create', methods=('POST'))
 @login_required
 def create():
+    #get band id from the session / context ?
     name = request.form['name']
     error = None
 
@@ -38,27 +30,28 @@ def create():
         return {"status": "good job"}
         #return redirect(url_for('index'))
 
-#seems like this should include the releases (id, year, name) + avg(review score) count(reviews) 
 @bp.route('/<int:id>', methods=('GET'))
-def get_one_band(id):
-    band = get_band(id)
+def get_one_release(id):
+    release = get_release(id)
     return band
 
-def get_band(id):
-    band = get_db().execute(
+#at some point we'll need a get all bands by a user function 
+#but get band by id is fine for now
+def get_release(id):
+    release = get_db().execute(
         'SELECT * FROM band WHERE id = ?',
         (id,)
     ).fetchone()
 
-    if band is None:
+    if release is None:
         abort(404, f"Band id {id} doesn't exist.")
     
-    return band
+    return release
 
 @bp.route('/<int:id>/update', methods=('POST'))
 @login_required
 def update(id):
-    band = get_band(id)
+    release = get_release(id)
 
     #build out as band object expands
     #has to be a better way to do this to be more dynamic
@@ -73,7 +66,7 @@ def update(id):
     else:
         db = get_db()
         db.execute(
-            'UPDATE band SET name = ? WHERE id = ?',
+            'UPDATE release SET name = ? WHERE id = ?',
             (name, id)
         )
         db.commit()
@@ -84,9 +77,9 @@ def update(id):
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
-    get_band(id)
+    get_release(id)
     db = get_db()
-    db.execute('DELETE FROM band WHERE id = ?', (id,))
+    db.execute('DELETE FROM release WHERE id = ?', (id,))
     db.commit()
     return {"status": "good job"}
     #return redirect(for_url('index'))

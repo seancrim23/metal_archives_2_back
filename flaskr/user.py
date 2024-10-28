@@ -57,6 +57,69 @@ def login():
 
     flash(error)
 
+@bp.route('/<int:id>', methods=('GET'))
+def get_one_user(id):
+    band = get_band(id)
+    return band
+
+def get_user(id):
+    #refactor to not include password in query results
+    user = get_db().execute(
+        'SELECT * FROM user WHERE id = ?',
+        (id,)
+    ).fetchone()
+
+    if band is None:
+        abort(404, f"User id {id} doesn't exist.")
+    
+    return band
+
+@bp.route('/<int:id>/update', methods=('POST'))
+@login_required
+def update(id):
+    user = get_user(id)
+
+    #build out as band object expands
+    #has to be a better way to do this to be more dynamic
+    name = request.form['name']
+    error = None
+
+    if not name:
+        error = 'Name is required.'
+
+    if error is not None:
+        flash(error)
+    else:
+        db = get_db()
+        db.execute(
+            'UPDATE user SET name = ? WHERE id = ?',
+            (name, id)
+        )
+        db.commit()
+        return redirect(url_for('index'))
+
+
+@bp.route('/<int:id>/delete', methods=('POST',))
+@login_required
+def delete(id):
+    get_user(id)
+    db = get_db()
+    db.execute('DELETE FROM user WHERE id = ?', (id,))
+    db.commit()
+    return redirect(for_url('index'))
+
+#TODO - modifications by user
+@bp.route('/<int:id>/modifications', methods=('GET',))
+@login_required
+def get_modifications(id):
+    return redirect(for_url('index'))
+
+#TODO - reviews by user
+@bp.route('/<int:id>/reviews', methods=('GET',))
+@login_required
+def get_reviews(id):
+    return redirect(for_url('index'))
+
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')

@@ -6,20 +6,15 @@ from werkzeug.exceptions import abort
 from flaskr.auth import login_required
 from flaskr.db import get_db
 
-bp = Blueprint('band', __name__, url_prefix='/band')
+bp = Blueprint('track', __name__, url_prefix='/track')
 
-#this needs to be paginated
-@bp.route('/')
-def get_all_bands():
-    db = get_db()
-    bands = db.execute(
-        'SELECT * FROM band'
-    ).fetchall()
-    return bands
+#CREATE READ UPDATE DELETE
 
 @bp.route('/create', methods=('POST'))
 @login_required
 def create():
+    #get release id from the session / context ?
+    #get user id from session / context?
     name = request.form['name']
     error = None
 
@@ -31,34 +26,34 @@ def create():
     else:
         db = get_db()
         db.execute(
-            'INSERT INTO band (name) VALUES (?)',
+            'INSERT INTO tracks (name) VALUES (?)',
             (name)
         )
         db.commit()
-        return {"status": "good job"}
-        #return redirect(url_for('index'))
+        return redirect(url_for('index'))
 
-#seems like this should include the releases (id, year, name) + avg(review score) count(reviews) 
 @bp.route('/<int:id>', methods=('GET'))
-def get_one_band(id):
-    band = get_band(id)
-    return band
+def get_one_track(id):
+    track = get_track(id)
+    return track
 
-def get_band(id):
-    band = get_db().execute(
-        'SELECT * FROM band WHERE id = ?',
+#at some point we'll need a get all bands by a user function 
+#but get band by id is fine for now
+def get_track(id):
+    track = get_db().execute(
+        'SELECT * FROM tracks WHERE id = ?',
         (id,)
     ).fetchone()
 
-    if band is None:
-        abort(404, f"Band id {id} doesn't exist.")
+    if track is None:
+        abort(404, f"Track id {id} doesn't exist.")
     
-    return band
+    return track
 
 @bp.route('/<int:id>/update', methods=('POST'))
 @login_required
 def update(id):
-    band = get_band(id)
+    track = get_track(id)
 
     #build out as band object expands
     #has to be a better way to do this to be more dynamic
@@ -73,20 +68,18 @@ def update(id):
     else:
         db = get_db()
         db.execute(
-            'UPDATE band SET name = ? WHERE id = ?',
+            'UPDATE tracks SET name = ? WHERE id = ?',
             (name, id)
         )
         db.commit()
-        return {"status": "good job"}
-        #return redirect(url_for('index'))
+        return redirect(url_for('index'))
 
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete(id):
-    get_band(id)
+    get_track(id)
     db = get_db()
-    db.execute('DELETE FROM band WHERE id = ?', (id,))
+    db.execute('DELETE FROM tracks WHERE id = ?', (id,))
     db.commit()
-    return {"status": "good job"}
-    #return redirect(for_url('index'))
+    return redirect(for_url('index'))
