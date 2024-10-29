@@ -9,7 +9,7 @@ from flaskr.db import get_db
 
 bp = Blueprint('user', __name__, url_prefix='/user')
 
-@bp.route('/new', methods=('POST'))
+@bp.route('/new', methods=('POST',))
 def create_user():
     username = request.form['username']
     password = request.form['password']
@@ -35,7 +35,7 @@ def create_user():
 
     flash(error)
 
-@bp.route('/login', methods=('POST'))
+@bp.route('/login', methods=('POST',))
 def login():
     username = request.form['username']
     password = request.form['password']
@@ -57,7 +57,7 @@ def login():
 
     flash(error)
 
-@bp.route('/<int:id>', methods=('GET'))
+@bp.route('/<int:id>', methods=('GET',))
 def get_one_user(id):
     band = get_band(id)
     return band
@@ -65,7 +65,7 @@ def get_one_user(id):
 def get_user(id):
     #refactor to not include password in query results
     user = get_db().execute(
-        'SELECT * FROM user WHERE id = ?',
+        'SELECT username FROM user WHERE id = ?',
         (id,)
     ).fetchone()
 
@@ -74,8 +74,7 @@ def get_user(id):
     
     return band
 
-@bp.route('/<int:id>/update', methods=('POST'))
-@login_required
+@bp.route('/<int:id>/update', methods=('POST',))
 def update(id):
     user = get_user(id)
 
@@ -100,7 +99,6 @@ def update(id):
 
 
 @bp.route('/<int:id>/delete', methods=('POST',))
-@login_required
 def delete(id):
     get_user(id)
     db = get_db()
@@ -110,13 +108,11 @@ def delete(id):
 
 #TODO - modifications by user
 @bp.route('/<int:id>/modifications', methods=('GET',))
-@login_required
 def get_modifications(id):
     return redirect(for_url('index'))
 
 #TODO - reviews by user
 @bp.route('/<int:id>/reviews', methods=('GET',))
-@login_required
 def get_reviews(id):
     return redirect(for_url('index'))
 

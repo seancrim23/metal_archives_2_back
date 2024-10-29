@@ -3,15 +3,14 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from flaskr.auth import login_required
+from flaskr.user import login_required
 from flaskr.db import get_db
 
 bp = Blueprint('track', __name__, url_prefix='/track')
 
 #CREATE READ UPDATE DELETE
 
-@bp.route('/create', methods=('POST'))
-@login_required
+@bp.route('/create', methods=('POST',))
 def create():
     #get release id from the session / context ?
     #get user id from session / context?
@@ -32,7 +31,7 @@ def create():
         db.commit()
         return redirect(url_for('index'))
 
-@bp.route('/<int:id>', methods=('GET'))
+@bp.route('/<int:id>', methods=('GET',))
 def get_one_track(id):
     track = get_track(id)
     return track
@@ -50,7 +49,7 @@ def get_track(id):
     
     return track
 
-@bp.route('/<int:id>/update', methods=('POST'))
+@bp.route('/<int:id>/update', methods=('POST',))
 @login_required
 def update(id):
     track = get_track(id)
@@ -76,7 +75,6 @@ def update(id):
 
 
 @bp.route('/<int:id>/delete', methods=('POST',))
-@login_required
 def delete(id):
     get_track(id)
     db = get_db()

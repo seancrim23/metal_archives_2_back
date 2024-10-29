@@ -3,13 +3,12 @@ from flask import (
 )
 from werkzeug.exceptions import abort
 
-from flaskr.auth import login_required
+from flaskr.user import login_required
 from flaskr.db import get_db
 
 bp = Blueprint('release', __name__, url_prefix='/release')
 
-@bp.route('/create', methods=('POST'))
-@login_required
+@bp.route('/create', methods=('POST',))
 def create():
     #get band id from the session / context ?
     name = request.form['name']
@@ -30,7 +29,7 @@ def create():
         return {"status": "good job"}
         #return redirect(url_for('index'))
 
-@bp.route('/<int:id>', methods=('GET'))
+@bp.route('/<int:id>', methods=('GET',))
 def get_one_release(id):
     release = get_release(id)
     return band
@@ -48,8 +47,7 @@ def get_release(id):
     
     return release
 
-@bp.route('/<int:id>/update', methods=('POST'))
-@login_required
+@bp.route('/<int:id>/update', methods=('POST',))
 def update(id):
     release = get_release(id)
 
@@ -75,7 +73,6 @@ def update(id):
 
 
 @bp.route('/<int:id>/delete', methods=('POST',))
-@login_required
 def delete(id):
     get_release(id)
     db = get_db()
