@@ -34,6 +34,12 @@ def create_app(test_config=None):
     app.register_blueprint(user.bp)
     from . import band
     app.register_blueprint(band.bp)
+    from . import release
+    app.register_blueprint(release.bp)
+    from . import review
+    app.register_blueprint(review.bp)
+    from . import track
+    app.register_blueprint(track.bp)
     app.add_url_rule('/', endpoint='index')
-    
+
     return app

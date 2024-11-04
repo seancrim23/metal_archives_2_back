@@ -45,12 +45,37 @@ def create():
 @bp.route('/<int:id>', methods=('GET',))
 def get_one_band(id):
     band = get_band_with_metadata(id)
-    return json.dumps( [dict(b) for b in band] )
+    band_formatted = build_formatted_response(band)
+    return json.dumps( band_formatted )
+
+def build_formatted_response(band):
+    band_formatted = {}
+
+    band_info_dict = dict(band[0])
+    band_formatted['name'] = band_info_dict['name']
+    band_formatted['status'] = band_info_dict['status']
+    band_formatted['band_picture'] = band_info_dict['band_picture']
+
+    band_formatted['releases'] = []
+
+    for b in band:
+        current_dict = dict(b)
+        release = {
+            'release_id': current_dict['release_id'],
+            'year': current_dict['year'],
+            'name': current_dict['name'],
+            'review_avg': current_dict['review_avg'],
+            'review_count': current_dict['review_count']
+        }
+        band_formatted['releases'].append(release)
+    
+    return band_formatted
+
 
 # pulling band + release list and avg / count for reviews by release
 def get_band_with_metadata(id):
     band_with_metadata = get_db().execute(
-        'SELECT a.name, a.status, a.band_picture, b.id as release_id, b.year, b.name, AVG(c.score) as review_avg, COUNT(c.id) as review_count FROM band a INNER JOIN releases b on b.band_id = a.id INNER JOIN reviews c on c.release_id = b.id WHERE a.id = ? GROUP BY b.id',
+        'SELECT a.name, a.status, a.band_picture, b.id as release_id, b.year, b.name, AVG(c.score) as review_avg, COUNT(c.id) as review_count FROM band a LEFT JOIN releases b on b.band_id = a.id LEFT JOIN reviews c on c.release_id = b.id WHERE a.id = ? GROUP BY b.id',
         (id,)
     ).fetchall()
 
