@@ -52,6 +52,7 @@ def build_formatted_response(band):
     band_formatted = {}
 
     band_info_dict = dict(band[0])
+    band_formatted['id'] = band_info_dict['id']
     band_formatted['name'] = band_info_dict['name']
     band_formatted['status'] = band_info_dict['status']
     band_formatted['band_picture'] = band_info_dict['band_picture']
@@ -61,21 +62,21 @@ def build_formatted_response(band):
     for b in band:
         current_dict = dict(b)
         release = {
-            'release_id': current_dict['release_id'],
+            'id': current_dict['release_id'],
             'year': current_dict['year'],
-            'name': current_dict['name'],
+            'name': current_dict['release_name'],
             'review_avg': current_dict['review_avg'],
             'review_count': current_dict['review_count']
         }
         band_formatted['releases'].append(release)
-    
+
     return band_formatted
 
 
 # pulling band + release list and avg / count for reviews by release
 def get_band_with_metadata(id):
     band_with_metadata = get_db().execute(
-        'SELECT a.name, a.status, a.band_picture, b.id as release_id, b.year, b.name, AVG(c.score) as review_avg, COUNT(c.id) as review_count FROM band a LEFT JOIN releases b on b.band_id = a.id LEFT JOIN reviews c on c.release_id = b.id WHERE a.id = ? GROUP BY b.id',
+        'SELECT a.name, a.id, a.status, a.band_picture, b.id as release_id, b.year, b.name as release_name, AVG(c.score) as review_avg, COUNT(c.id) as review_count FROM band a LEFT JOIN releases b on b.band_id = a.id LEFT JOIN reviews c on c.release_id = b.id WHERE a.id = ? GROUP BY b.id',
         (id,)
     ).fetchall()
 
@@ -93,7 +94,7 @@ def get_band(id):
 
     if band is None:
         abort(404, f"Band id {id} doesn't exist.")
-    
+
     print(band)
 
     return band

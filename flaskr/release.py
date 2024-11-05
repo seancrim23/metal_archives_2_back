@@ -1,6 +1,7 @@
 from flask import (
-    Blueprint, flash, g, redirect, request, url_for
+    Blueprint, flash, g, redirect, request, url_for, jsonify
 )
+import json
 from werkzeug.exceptions import abort
 
 from flaskr.user import login_required
@@ -32,19 +33,19 @@ def create():
 @bp.route('/<int:id>', methods=('GET',))
 def get_one_release(id):
     release = get_release(id)
-    return band
+    return json.dumps([dict(release)])
 
-#at some point we'll need a get all bands by a user function 
+#at some point we'll need a get all bands by a user function
 #but get band by id is fine for now
 def get_release(id):
     release = get_db().execute(
-        'SELECT * FROM band WHERE id = ?',
+        'SELECT a.name, a.year, a.art, a.release_type, a.band_id, b.name as band_name FROM releases a INNER JOIN band b on b.id = a.band_id WHERE a.id = ?',
         (id,)
     ).fetchone()
 
     if release is None:
-        abort(404, f"Band id {id} doesn't exist.")
-    
+        abort(404, f"Release id {id} doesn't exist.")
+
     return release
 
 @bp.route('/<int:id>/update', methods=('POST',))
@@ -64,7 +65,7 @@ def update(id):
     else:
         db = get_db()
         db.execute(
-            'UPDATE release SET name = ? WHERE id = ?',
+            'UPDATE releases SET name = ? WHERE id = ?',
             (name, id)
         )
         db.commit()
